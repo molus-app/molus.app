@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "node build.js",
-    "dev": "node dev.js"
+    "dev": "node dev.js",
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",

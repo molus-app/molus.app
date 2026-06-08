@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { marked } from "marked";
 import matter from "gray-matter";
 import config from "./config.js";
@@ -44,14 +45,60 @@ function readMarkdownFiles(dir) {
     });
 }
 
+// Read post packages: each post is a folder `<slug>/` containing an `index.md`
+// (frontmatter + prose) plus any colocated asset files/folders.
+function readPostPackages(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const slug = entry.name;
+      const packageDir = path.join(dir, slug);
+      const indexPath = path.join(packageDir, "index.md");
+      if (!fs.existsSync(indexPath)) {
+        console.warn(`  skip: posts/${slug} has no index.md`);
+        return null;
+      }
+      const raw = fs.readFileSync(indexPath, "utf-8");
+      const { data, content } = matter(raw);
+      const html = marked(content);
+
+      if (!data.title) console.warn(`  warn: posts/${slug} is missing 'title'`);
+      if (!data.date) console.warn(`  warn: posts/${slug} is missing 'date'`);
+      if (data.cover && !fs.existsSync(path.join(packageDir, data.cover))) {
+        console.warn(`  warn: posts/${slug} cover not found: ${data.cover}`);
+      }
+
+      return { ...data, slug, html, packageDir };
+    })
+    .filter(Boolean);
+}
+
+// Copy a post package's assets (everything except index.md) into its output dir.
+// Relative asset paths in the markdown then resolve as-is against the HTML file.
+function copyPackageAssets(srcDir, destDir) {
+  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    if (entry.name === "index.md") continue;
+    const srcPath = path.join(srcDir, entry.name);
+    const destPath = path.join(destDir, entry.name);
+    if (entry.isDirectory()) {
+      ensureDir(destPath);
+      copyDirSync(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 // ── Build ────────────────────────────────────────────────
 
-function build() {
+export function build({ distDir = DIST, postsDir = POSTS_DIR, pagesDir = PAGES_DIR } = {}) {
   console.log("Building...");
-  ensureDir(DIST);
+  ensureDir(distDir);
 
-  // 1. Build posts
-  const posts = readMarkdownFiles(POSTS_DIR)
+  // 1. Build post packages
+  const posts = readPostPackages(postsDir)
     .map((p) => ({
       ...p,
       url: `${config.baseUrl}/posts/${p.slug}`,
@@ -61,19 +108,20 @@ function build() {
     .sort((a, b) => b.date - a.date);
 
   for (const p of posts) {
-    const dir = path.join(DIST, "posts", p.slug);
+    const dir = path.join(distDir, "posts", p.slug);
     ensureDir(dir);
     const content = postTemplate(p);
     const html = base(config, { title: p.title, content, currentPath: `/posts/${p.slug}` });
     fs.writeFileSync(path.join(dir, "index.html"), html);
+    copyPackageAssets(p.packageDir, dir);
     console.log(`  post: ${p.slug}`);
   }
 
   // 2. Build static pages
-  const pages = readMarkdownFiles(PAGES_DIR);
+  const pages = readMarkdownFiles(pagesDir);
 
   for (const p of pages) {
-    const dir = path.join(DIST, p.slug);
+    const dir = path.join(distDir, p.slug);
     ensureDir(dir);
     const content = pageTemplate(p);
     const html = base(config, { title: p.title, content, currentPath: `/${p.slug}` });
@@ -84,16 +132,17 @@ function build() {
   // 3. Build index
   const indexContent = index(posts);
   const indexHtml = base(config, { title: null, content: indexContent, currentPath: "/" });
-  fs.writeFileSync(path.join(DIST, "index.html"), indexHtml);
+  fs.writeFileSync(path.join(distDir, "index.html"), indexHtml);
   console.log("  index");
 
   // 4. Copy static files
   if (fs.existsSync("static")) {
-    copyDirSync("static", DIST);
+    copyDirSync("static", distDir);
     console.log("  static assets");
   }
 
-  console.log(`Done! ${posts.length} posts, ${pages.length} pages → ./${DIST}/`);
+  console.log(`Done! ${posts.length} posts, ${pages.length} pages → ./${distDir}/`);
+  return { posts, pages };
 }
 
 function copyDirSync(src, dest) {
@@ -109,4 +158,7 @@ function copyDirSync(src, dest) {
   }
 }
 
-build();
+// Run the build only when executed directly (`node build.js`), not when imported.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  build();
+}

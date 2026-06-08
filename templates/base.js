@@ -76,7 +76,18 @@ export function base(config, { title, content, currentPath = "/" }) {
       margin-bottom: 1rem;
     }
     .prose pre code { background: none; padding: 0; }
-    .prose img { max-width: 100%; border-radius: 6px; margin: 1rem 0; }
+    .prose img { max-width: 100%; height: auto; border-radius: 6px; margin: 1rem 0; }
+
+    /* Cover figure */
+    .post-cover { margin: 0 0 1.5rem; }
+    .post-cover img { width: 100%; height: auto; border-radius: 6px; display: block; }
+    .post-cover figcaption {
+      color: ${s.colorMuted};
+      font-size: 0.85rem;
+      font-style: italic;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
 
     .post-meta { color: ${s.colorMuted}; font-size: 0.85rem; margin-bottom: 2rem; }
     .back-link { display: inline-block; margin-top: 2rem; color: ${s.colorMuted}; text-decoration: none; font-size: 0.9rem; }
