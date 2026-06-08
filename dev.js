@@ -135,7 +135,25 @@ function serve(req, res) {
 
 rebuild();
 
-http.createServer(serve).listen(PORT, () => {
-  console.log(`\n  dev server → http://localhost:${PORT}`);
+// Bind to PORT, scanning upward for the first open port (like Next/Vite).
+function listenWithFallback(server, port, attemptsLeft = 20) {
+  server.once("error", (err) => {
+    if (err.code === "EADDRINUSE" && attemptsLeft > 0) {
+      console.log(`  port ${port} in use, trying ${port + 1}...`);
+      listenWithFallback(server, port + 1, attemptsLeft - 1);
+    } else {
+      throw err;
+    }
+  });
+  server.listen(port);
+}
+
+const devServer = http.createServer(serve);
+// Single success handler reads the actually-bound port, avoiding stale
+// per-attempt callbacks that would all fire on the eventual bind.
+devServer.on("listening", () => {
+  const { port } = devServer.address();
+  console.log(`\n  dev server → http://localhost:${port}`);
   console.log(`  watching for changes...\n`);
 });
+listenWithFallback(devServer, Number(PORT));
