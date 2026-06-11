@@ -5,7 +5,7 @@ import { execSync } from "child_process";
 
 const DIST = "dist";
 const PORT = process.env.PORT || 3000;
-const WATCH_DIRS = ["posts", "pages", "templates", "static"];
+const WATCH_DIRS = ["posts", "templates", "static"];
 const WATCH_FILES = ["config.js", "build.js"];
 
 // ── SSE clients for live reload ─────────────────────────

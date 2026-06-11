@@ -7,11 +7,9 @@ import config from "./config.js";
 import { base } from "./templates/base.js";
 import { index } from "./templates/index.js";
 import { post as postTemplate } from "./templates/post.js";
-import { page as pageTemplate } from "./templates/page.js";
 
 const DIST = "dist";
 const POSTS_DIR = "posts";
-const PAGES_DIR = "pages";
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -24,25 +22,8 @@ function formatDate(date) {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "UTC",
   });
-}
-
-function slugFromFilename(filename) {
-  return path.basename(filename, ".md");
-}
-
-function readMarkdownFiles(dir) {
-  if (!fs.existsSync(dir)) return [];
-  return fs
-    .readdirSync(dir)
-    .filter((f) => f.endsWith(".md"))
-    .map((filename) => {
-      const raw = fs.readFileSync(path.join(dir, filename), "utf-8");
-      const { data, content } = matter(raw);
-      const html = marked(content);
-      const slug = slugFromFilename(filename);
-      return { ...data, slug, html, filename };
-    });
 }
 
 // Read post packages: each post is a folder `<slug>/` containing an `index.md`
@@ -66,9 +47,6 @@ function readPostPackages(dir) {
 
       if (!data.title) console.warn(`  warn: posts/${slug} is missing 'title'`);
       if (!data.date) console.warn(`  warn: posts/${slug} is missing 'date'`);
-      if (data.cover && !fs.existsSync(path.join(packageDir, data.cover))) {
-        console.warn(`  warn: posts/${slug} cover not found: ${data.cover}`);
-      }
 
       return { ...data, slug, html, packageDir };
     })
@@ -93,7 +71,7 @@ function copyPackageAssets(srcDir, destDir) {
 
 // ── Build ────────────────────────────────────────────────
 
-export function build({ distDir = DIST, postsDir = POSTS_DIR, pagesDir = PAGES_DIR } = {}) {
+export function build({ distDir = DIST, postsDir = POSTS_DIR } = {}) {
   console.log("Building...");
   ensureDir(distDir);
 
@@ -105,44 +83,32 @@ export function build({ distDir = DIST, postsDir = POSTS_DIR, pagesDir = PAGES_D
       date: new Date(p.date),
       dateFormatted: formatDate(p.date),
     }))
-    .sort((a, b) => b.date - a.date);
+    .sort((a, b) => a.date - b.date);
 
   for (const p of posts) {
     const dir = path.join(distDir, "posts", p.slug);
     ensureDir(dir);
     const content = postTemplate(p);
-    const html = base(config, { title: p.title, content, currentPath: `/posts/${p.slug}` });
+    const html = base(config, { title: p.title, content });
     fs.writeFileSync(path.join(dir, "index.html"), html);
     copyPackageAssets(p.packageDir, dir);
     console.log(`  post: ${p.slug}`);
   }
 
-  // 2. Build static pages
-  const pages = readMarkdownFiles(pagesDir);
-
-  for (const p of pages) {
-    const dir = path.join(distDir, p.slug);
-    ensureDir(dir);
-    const content = pageTemplate(p);
-    const html = base(config, { title: p.title, content, currentPath: `/${p.slug}` });
-    fs.writeFileSync(path.join(dir, "index.html"), html);
-    console.log(`  page: ${p.slug}`);
-  }
-
-  // 3. Build index
+  // 2. Build index
   const indexContent = index(posts);
-  const indexHtml = base(config, { title: null, content: indexContent, currentPath: "/" });
+  const indexHtml = base(config, { title: null, content: indexContent });
   fs.writeFileSync(path.join(distDir, "index.html"), indexHtml);
   console.log("  index");
 
-  // 4. Copy static files
+  // 3. Copy static files
   if (fs.existsSync("static")) {
     copyDirSync("static", distDir);
     console.log("  static assets");
   }
 
-  console.log(`Done! ${posts.length} posts, ${pages.length} pages → ./${distDir}/`);
-  return { posts, pages };
+  console.log(`Done! ${posts.length} posts → ./${distDir}/`);
+  return { posts };
 }
 
 function copyDirSync(src, dest) {
