@@ -18,7 +18,7 @@ export default {
       bg: "#fafaf9",
       text: "#1c1917",
       muted: "#78716c",
-      accent: "#b45309",
+      accent: "#3069a6",
       codeBg: "#f5f5f4",
     },
     dark: {

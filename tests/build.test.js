@@ -137,6 +137,11 @@ test("theme is initialized in <head> before first paint", () => {
     "theme-init script must run in <head>",
   );
   assert.match(html, /:root\[data-theme="dark"\][\s\S]*?--bg: #1c1917;/);
+  assert.match(
+    html,
+    /--accent: #3069a6;[\s\S]*?:root\[data-theme="dark"\][\s\S]*?--accent: #f59e0b;/,
+    "moonlight blue accent in light mode, sunlight amber in dark mode",
+  );
 });
 
 test("back link sits below the post content", () => {
