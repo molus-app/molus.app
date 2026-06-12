@@ -3,7 +3,7 @@ title: "About"
 date: 2026-06-11
 ---
 
-## We are here to save the world
+## The world needs us
 The world is marked by selfishness. Everywhere we look, there is self-obsession and its inevitable outcomes: war, poverty, and general apathy. The cause is a misunderstanding of human nature, and Molus exists to nurture the transformation.
 
 ## Continual self realization
