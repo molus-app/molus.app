@@ -147,13 +147,17 @@ test("back link sits below the post content", () => {
   expect(html.indexOf('class="back-link"')).toBeGreaterThan(html.indexOf("Body text"));
 });
 
-test("footer has slashed copyright, year, and the configured links", () => {
+test("footer has CC0 license badge and the configured links, but no date", () => {
   const { distDir, postsDir } = makeFixture();
   build({ distDir, postsDir });
   const html = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
-  expect(html).toMatch(/class="copyleft"/);
-  // footer should show only the founding year after the symbol
-  expect(html.includes("</span> 2026</span>")).toBe(true);
+  // the CC0 (public domain dedication) badge links to the deed
+  expect(html).toMatch(/class="cc-license"/);
+  expect(html).toMatch(/href="https:\/\/creativecommons\.org\/publicdomain\/zero\/1\.0\/"/);
+  expect(html).toContain("CC0 1.0");
+  // the footer should no longer carry a year/date
+  const footer = html.slice(html.indexOf("<footer>"), html.indexOf("</footer>"));
+  expect(footer).not.toMatch(/<span>\d{4}<\/span>/);
   expect(html).toMatch(/href="https:\/\/github\.com\/molus-app\/molus\.app-src"/);
   expect(html).toMatch(/href="mailto:contact@molus\.app"/);
 });

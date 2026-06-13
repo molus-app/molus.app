@@ -10,7 +10,6 @@ export interface ThemeColors {
 
 export interface Config {
   name: string;
-  founded: number;
   links: { label: string; href: string }[];
   style: {
     fontBody: string;

@@ -130,6 +130,7 @@ export function base(
       color: var(--muted);
       font-size: 0.8rem;
       display: flex;
+      align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 0.5rem;
@@ -138,23 +139,9 @@ export function base(
     footer a:hover { color: var(--accent); }
     .footer-links { display: flex; gap: 1rem; }
 
-    /* © with a diagonal slash through it, sized up so the slash reads */
-    .copyleft {
-      position: relative;
-      display: inline-block;
-      font-size: 1.4em;
-      line-height: 1;
-      vertical-align: -0.13em;
-    }
-    .copyleft::after {
-      content: "";
-      position: absolute;
-      left: -0.05em;
-      right: -0.05em;
-      top: 50%;
-      border-top: 1px solid currentColor;
-      transform: rotate(-45deg);
-    }
+    /* Creative Commons CC0 (public domain dedication) badge */
+    .cc-license { display: inline-flex; line-height: 0; }
+    .cc-license svg { height: 1.5em; width: auto; }
   </style>
 </head>
 <body>
@@ -172,7 +159,14 @@ export function base(
     ${content}
   </main>
   <footer>
-    <span><span class="copyleft" role="img" aria-label="No copyright">&copy;</span> ${config.founded}</span>
+    <a class="cc-license" href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="license noopener noreferrer" aria-label="CC0 1.0 — no rights reserved, dedicated to the public domain">
+      <svg viewBox="0 0 46 22" aria-hidden="true">
+        <circle cx="11" cy="11" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="11" y="11" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="600" fill="currentColor">CC</text>
+        <circle cx="35" cy="11" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="35" y="11" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="600" fill="currentColor">0</text>
+      </svg>
+    </a>
     <span class="footer-links">
       ${config.links.map((l) => `<a href="${l.href}">${l.label}</a>`).join("\n      ")}
     </span>

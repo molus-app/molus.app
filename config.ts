@@ -3,7 +3,6 @@ import type { Config } from "./types.ts";
 const config: Config = {
   // Identity
   name: "Molus",
-  founded: 2026,
 
   // Social / footer links
   links: [
