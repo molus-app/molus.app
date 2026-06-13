@@ -1,23 +1,23 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { marked } from "marked";
 import matter from "gray-matter";
-import config from "./config.js";
-import { base } from "./templates/base.js";
-import { index } from "./templates/index.js";
-import { post as postTemplate } from "./templates/post.js";
+import config from "./config.ts";
+import { base } from "./templates/base.ts";
+import { index } from "./templates/index.ts";
+import { post as postTemplate } from "./templates/post.ts";
+import type { PostFrontmatter, RawPost, Post } from "./types.ts";
 
 const DIST = "dist";
 const POSTS_DIR = "posts";
 
 // ── Helpers ──────────────────────────────────────────────
 
-function ensureDir(dir) {
+function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-function formatDate(date) {
+function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -28,12 +28,12 @@ function formatDate(date) {
 
 // Read post packages: each post is a folder `<slug>/` containing an `index.md`
 // (frontmatter + prose) plus any colocated asset files/folders.
-function readPostPackages(dir) {
+function readPostPackages(dir: string): RawPost[] {
   if (!fs.existsSync(dir)) return [];
   return fs
     .readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => {
+    .map((entry): RawPost | null => {
       const slug = entry.name;
       const packageDir = path.join(dir, slug);
       const indexPath = path.join(packageDir, "index.md");
@@ -43,19 +43,20 @@ function readPostPackages(dir) {
       }
       const raw = fs.readFileSync(indexPath, "utf-8");
       const { data, content } = matter(raw);
-      const html = marked(content);
+      const frontmatter = data as PostFrontmatter;
+      const html = marked(content, { async: false });
 
-      if (!data.title) console.warn(`  warn: posts/${slug} is missing 'title'`);
-      if (!data.date) console.warn(`  warn: posts/${slug} is missing 'date'`);
+      if (!frontmatter.title) console.warn(`  warn: posts/${slug} is missing 'title'`);
+      if (!frontmatter.date) console.warn(`  warn: posts/${slug} is missing 'date'`);
 
-      return { ...data, slug, html, packageDir };
+      return { ...frontmatter, slug, html, packageDir };
     })
-    .filter(Boolean);
+    .filter((p): p is RawPost => p !== null);
 }
 
 // Copy a post package's assets (everything except index.md) into its output dir.
 // Relative asset paths in the markdown then resolve as-is against the HTML file.
-function copyPackageAssets(srcDir, destDir) {
+function copyPackageAssets(srcDir: string, destDir: string): void {
   for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
     if (entry.name === "index.md") continue;
     const srcPath = path.join(srcDir, entry.name);
@@ -71,25 +72,32 @@ function copyPackageAssets(srcDir, destDir) {
 
 // ── Build ────────────────────────────────────────────────
 
-export function build({ distDir = DIST, postsDir = POSTS_DIR } = {}) {
+export function build(
+  { distDir = DIST, postsDir = POSTS_DIR }: { distDir?: string; postsDir?: string } = {},
+): { posts: Post[] } {
   console.log("Building...");
   ensureDir(distDir);
 
   // 1. Build post packages
-  const posts = readPostPackages(postsDir)
-    .map((p) => ({
-      ...p,
-      url: `${config.baseUrl}/posts/${p.slug}`,
-      date: new Date(p.date),
-      dateFormatted: formatDate(p.date),
-    }))
-    .sort((a, b) => a.date - b.date);
+  const posts: Post[] = readPostPackages(postsDir)
+    .map((p): Post => {
+      // gray-matter yields Date (unquoted) or string (quoted); a missing date
+      // falls through to an Invalid Date exactly as before (warned above).
+      const rawDate = p.date as string | Date;
+      return {
+        ...p,
+        url: `${config.baseUrl}/posts/${p.slug}`,
+        date: new Date(rawDate),
+        dateFormatted: formatDate(rawDate),
+      };
+    })
+    .sort((a, b) => +a.date - +b.date);
 
   for (const p of posts) {
     const dir = path.join(distDir, "posts", p.slug);
     ensureDir(dir);
     const content = postTemplate(p);
-    const html = base(config, { title: p.title, content });
+    const html = base(config, { title: p.title ?? null, content });
     fs.writeFileSync(path.join(dir, "index.html"), html);
     copyPackageAssets(p.packageDir, dir);
     console.log(`  post: ${p.slug}`);
@@ -111,7 +119,7 @@ export function build({ distDir = DIST, postsDir = POSTS_DIR } = {}) {
   return { posts };
 }
 
-function copyDirSync(src, dest) {
+function copyDirSync(src: string, dest: string): void {
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
@@ -124,7 +132,7 @@ function copyDirSync(src, dest) {
   }
 }
 
-// Run the build only when executed directly (`node build.js`), not when imported.
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// Run the build only when executed directly (`bun build.ts`), not when imported.
+if (import.meta.main) {
   build();
 }

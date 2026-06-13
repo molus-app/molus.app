@@ -1,4 +1,9 @@
-export function base(config, { title, content }) {
+import type { Config } from "../types.ts";
+
+export function base(
+  config: Config,
+  { title, content }: { title: string | null; content: string },
+): string {
   const s = config.style;
   const pageTitle = title ? `${title} — ${config.name}` : config.name;
 
