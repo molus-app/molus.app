@@ -3,7 +3,7 @@ title: "Yieldism: a rational obsession"
 date: 2026-06-13
 ---
 
-Yielding is the source of all Truth and Deception; all Love and Hate.
+Yieldism is the source of all Truth and Deception; all Love and Hate.
 
 Yielding, we become an instrument of the greatest force
 
