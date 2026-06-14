@@ -1,32 +1,36 @@
 ---
-title: "Yieldism"
+title: "Yieldism: a rational obsession"
 date: 2026-06-12
 ---
 
 Yielding is the source of all Truth and Deception; all Love and Hate.
 
-Yielding, we become an instrument of the greatest force, which may be good or evil.
+Yielding, we become an instrument of the greatest force
+
+which may be Good or Evil.
 
 To yield is what it means to be human.
 
-To be human, is what it means to yield.
+Too human, is to yield.
 
 ## Discerning is the difference
 
 Beyond discernments, the [Library of Babel](https://en.wikipedia.org/wiki/The_Library_of_Babel) awaits us. 
 
-You will find gifts from the Great Spirits within; yet Christ and Bhudda have long departed the city.
+You will find gifts from the Great Spirits within
 
-In its pool, you will see god and his refusal to unmask.
+Yet Abraham, Bhudda and Christ have long departed the city.
 
-Yet beyond discernments, you will see his face again.
+In the pool you will see god, yet he refuses to unmask himself.
 
-## Dependent origination
+But beyond discernments, who are we, but Him himself?
 
-Who is worthy of service, if not the one world we call home?
+## a Dependent Originator
 
-Who is worthy of life, if not the server and the serviced?
+Who is worthy of life, if not server and the serviced?
 
-Who are we, if not the [Way](https://en.wikipedia.org/wiki/Indra%27s_net) to the [Kingdom of God](https://en.wikipedia.org/wiki/Kingdom_of_God_(Christianity)?
+Who is worthy of service, if not the [One](https://en.wikipedia.org/wiki/Indra%27s_net) we call home?
 
-Who am I, if not a reflection of [Elohim](https://en.wikipedia.org/wiki/Elohim)?
+Where is home, if not the [Way](https://en.wikipedia.org/wiki/Tao) to the [Kingdom of God](https://en.wikipedia.org/wiki/Kingdom_of_God_(Christianity)?
+
+Who am I, if not [Elohim](https://en.wikipedia.org/wiki/Elohim)?
